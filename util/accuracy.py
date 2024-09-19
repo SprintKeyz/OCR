@@ -1,3 +1,5 @@
+from util.benchmark import get_final_score, start_benchmark, banchmark_started, add_student
+
 class Accuracy:
     def __init__(self):
         self.accuracy_scores = []
@@ -6,6 +8,11 @@ class Accuracy:
         self.character_accuracy = []
 
     def append_calculation(self, student, response_data):
+        if not banchmark_started():
+            start_benchmark()
+        
+        add_student()
+            
         checked_a = student[1]
         checked_b = student[2]
         checked_c = student[3]
@@ -102,3 +109,26 @@ class Accuracy:
     
     def get_students_by_accuracy_low_to_high(self):
         return sorted(self.accuracy_scores, key=lambda x: x[1])
+    
+    def get_final_score(self):
+        return round(get_final_score(self.get_overall_word_accuracy(), self.get_overall_character_accuracy()), 3)
+    
+    def print_report(self):
+        # overall accuracy
+        print()
+        print()
+        print('---------------------------------')
+        print(f'Overall word accuracy: {round(self.get_overall_word_accuracy() * 100, 3)}%')
+        print(f'Overall character accuracy: {round(self.get_overall_character_accuracy() * 100, 3)}%')
+        print('---------------------------------')
+        print(f'Minimum word accuracy: {self.get_min_word_accuracy()[0]}, {round(self.get_min_word_accuracy()[1] * 100, 3)}%')
+        print(f'Minimum character accuracy: {self.get_min_character_accuracy()[0]}, {round(self.get_min_character_accuracy()[1] * 100)}%')
+        print('---------------------------------')
+        if len(self.get_most_common_skipped_characters()) > 0:
+            print(f'Most common skipped characters: {self.get_most_common_skipped_characters()[0][0]}, {self.get_most_common_skipped_characters()[0][1]} times')
+        if len(self.get_most_common_ghost_characters()) > 0:
+            print(f'Most common ghost characters: {self.get_most_common_ghost_characters()[0][0]}, {self.get_most_common_ghost_characters()[0][1]} times')
+        print('---------------------------------')
+        print()
+        print()
+        print(f'Overall score: {round(self.get_final_score(), 3)}')

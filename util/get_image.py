@@ -13,6 +13,9 @@ def process_image(data_dir, students_data, student_number, popp_path=r'C:\Users\
     images = convert_from_path(pdf_path, poppler_path=popp_path)
     img = images[0]
     
+    # resize to 1654x2341
+    img = img.resize((1654, 2341))
+    
     # crop image
     img = img.crop((38, 1856, 731, 2292))
     
