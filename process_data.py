@@ -1,6 +1,7 @@
 # get -d arg as directory
 
 import argparse
+import sys
 
 parser = argparse.ArgumentParser(description='OCR Processing.')
 parser.add_argument('-d', '--data', type=str, help='data directory')
@@ -12,6 +13,12 @@ if not args.data:
     sys.exit()
     
 data_dir = args.data
+
+y_n = input(f'Are you sure you want to rename all files in {data_dir}? (y/n): ')
+
+if y_n.lower() != 'y':
+    print('Exiting...')
+    sys.exit()
 
 # for each file in data directory, rename it to s{file number)}.pdf, with file number being 5 digits
 # ex. a.pdf -> s00001.pdf
