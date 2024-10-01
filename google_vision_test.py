@@ -42,6 +42,9 @@ num_files = len([name for name in os.listdir(data_dir) if os.path.isfile(os.path
     
 max_students = args.num_students if args.num_students else num_files
 
+# get the last value on line 0 to get the "answer indicator"
+answer_indicator = data[0][-1]
+
 for (student_number) in range(1, max_students):
     student = data[student_number][1:]
     
@@ -76,20 +79,22 @@ for (student_number) in range(1, max_students):
     
     # split the response by new lines
     for line in texts[0].description.split('\n'):
-        # if a line starts with "Set" or "set", ignore the first 5 characters
-        if line.lower().startswith('set'):
-            line = line[5:]
-            
         # replace letter Z with number 2
         old_line = line
+        
+        # remove the text "write only answers below this line"
+        if answer_indicator.lower() in line.lower():
+            line = line.replace(answer_indicator, '')
+            
+        # if the line has the word "Set" in it, remove the entire line
+        if 'Set' in line:
+            continue
+        
         line = line.replace('Z', '2')
         line = line.replace('z', '2')
         line = line.replace('|', '1')
-        
-        # remove the text "write only answers below this line"
-        if 'write only answers below this line' in line.lower():
-            line = line.replace('Write ONLY answers below this line', '')
-            
+        line = line.replace('니', '4')
+        line = line.replace('५', '4')
         line = line.replace('S', '5')
         line = line.replace('s', '5')
         
@@ -113,6 +118,6 @@ for (student_number) in range(1, max_students):
     preprocessed_responses.append([student, texts[0].description, response_data])
     
     # append our calculation
-    acc.append_calculation(student, response_data)
+    acc.append_calculation(student, response_data, args.verbose)
     
 acc.print_report()

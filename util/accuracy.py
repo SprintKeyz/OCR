@@ -7,24 +7,45 @@ class Accuracy:
         self.ghost_characters = []
         self.character_accuracy = []
 
-    def append_calculation(self, student, response_data):
+    def append_calculation(self, student, response_data, verbose=False):
         if not banchmark_started():
             start_benchmark()
         
         add_student()
             
         checked_a = student[1]
-        checked_b = student[2]
-        checked_c = student[3]
+        
+        if (len(student) > 3):
+            checked_b = student[2]
+            
+        if (len(student) > 4):
+            checked_c = student[3]
 
         resp_a = response_data[0]
-        resp_b = response_data[1]
-        resp_c = response_data[2]
+        
+        if len(response_data) < 2:
+            resp_b = '-999999'
+        
+        else:
+            resp_b = response_data[1]
+            
+        if len(response_data) < 3:
+            resp_c = '-999999'
+            
+        else:
+            resp_c = response_data[2]
 
         # get accuracy by comparing the checked values to the response values and assinging a 1 for correct and 0 for incorrect
         accuracy_a = 1 if checked_a == resp_a else 0
-        accuracy_b = 1 if checked_b == resp_b else 0
-        accuracy_c = 1 if checked_c == resp_c else 0
+        
+        accuracy_b = 1
+        accuracy_c = 1
+        
+        if (len(student) > 3):
+            accuracy_b = 1 if checked_b == resp_b else 0
+
+        if (len(student) > 4):
+            accuracy_c = 1 if checked_c == resp_c else 0
 
         # sum the accuracies and divide by 3 to get the overall accuracy
         overall_accuracy = (accuracy_a + accuracy_b + accuracy_c) / 3
@@ -32,24 +53,55 @@ class Accuracy:
 
         # check for any skipped characters and append the character that was skipped
         skipped_chars_a = [char for char in checked_a if char not in resp_a]
-        skipped_chars_b = [char for char in checked_b if char not in resp_b]
-        skipped_chars_c = [char for char in checked_c if char not in resp_c]
+        
+        skipped_chars_b = []
+        skipped_chars_c = []
+        
+        if (len(student) > 3):
+            skipped_chars_b = [char for char in checked_b if char not in resp_b]
+
+        if (len(student) > 4):
+            skipped_chars_c = [char for char in checked_c if char not in resp_c]
+            
         skipped_chars = skipped_chars_a + skipped_chars_b + skipped_chars_c
         self.skipped_characters.append([student[0], skipped_chars])
 
         # check for any ghost characters and append the character that was added
         ghost_chars_a = [char for char in resp_a if char not in checked_a]
-        ghost_chars_b = [char for char in resp_b if char not in checked_b]
-        ghost_chars_c = [char for char in resp_c if char not in checked_c]
+        
+        ghost_chars_b = []
+        ghost_chars_c = []
+        
+        if (len(student) > 3):
+            ghost_chars_b = [char for char in resp_b if char not in checked_b]
+            
+        if (len(student) > 4):
+            ghost_chars_c = [char for char in resp_c if char not in checked_c]
+            
         ghost_chars = ghost_chars_a + ghost_chars_b + ghost_chars_c
         self.ghost_characters.append([student[0], ghost_chars])
 
         # get the character accuracy by comparing the checked values to the response values and assinging a 1 for correct and 0 for incorrect
         char_accuracy_a = sum([1 if checked_a[i] == resp_a[i] else 0 for i in range(min(len(checked_a), len(resp_a)))]) / min(len(checked_a), len(resp_a))
-        char_accuracy_b = sum([1 if checked_b[i] == resp_b[i] else 0 for i in range(min(len(checked_b), len(resp_b)))]) / min(len(checked_b), len(resp_b))
-        char_accuracy_c = sum([1 if checked_c[i] == resp_c[i] else 0 for i in range(min(len(checked_c), len(resp_c)))]) / min(len(checked_c), len(resp_c))
+        
+        char_accuracy_b = 1
+        char_accuracy_c = 1
+        
+        if (len(student) > 3):
+            char_accuracy_b = sum([1 if checked_b[i] == resp_b[i] else 0 for i in range(min(len(checked_b), len(resp_b)))]) / min(len(checked_b), len(resp_b))
+        
+        if (len(student) > 4):
+            char_accuracy_c = sum([1 if checked_c[i] == resp_c[i] else 0 for i in range(min(len(checked_c), len(resp_c)))]) / min(len(checked_c), len(resp_c))
+        
         overall_char_accuracy = (char_accuracy_a + char_accuracy_b + char_accuracy_c) / 3
         self.character_accuracy.append([student[0], overall_char_accuracy])
+        
+        if verbose:
+            print(f'Student {student[0]} accuracy: {round(overall_accuracy * 100, 3)}%')
+            print(f'Student {student[0]} character accuracy: {round(overall_char_accuracy * 100, 3)}%')
+            print(f'Student {student[0]} skipped characters: {skipped_chars}')
+            print(f'Student {student[0]} ghost characters: {ghost_chars}')
+            print()
         
     def get_overall_word_accuracy(self):
         return sum([score[1] for score in self.accuracy_scores]) / len(self.accuracy_scores)

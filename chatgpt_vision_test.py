@@ -78,7 +78,7 @@ for (student_number) in range(1, max_students):
                 'content': [
                     {
                         'type': 'text',
-                        'text': 'Find all numbers in this image and return them each on a new line, unless the word "Set" is before the number. Do not return ANYTHING except the numbers.'
+                        'text': 'Find all numbers in this image and return them each on a new line, unless the word "Set" is before the number. Do not return ANYTHING except the numbers. You should also always return three lines, since there will always be 3 numbers!'
                     },
                     {
                         'type': 'image_url',

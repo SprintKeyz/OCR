@@ -5,8 +5,14 @@ import sys
 
 parser = argparse.ArgumentParser(description='OCR Processing.')
 parser.add_argument('-d', '--data', type=str, help='data directory')
+parser.add_argument('-s', '--start', type=int, help='start index')
+
+start_index = 1
 
 args = parser.parse_args()
+
+if args.start:
+    start_index = args.start
 
 if not args.data:
     print('Please specify a data directory with -d')
@@ -27,6 +33,6 @@ import os
 
 for i, filename in enumerate(os.listdir(data_dir)):
     if filename.endswith('.pdf'):
-        os.rename(f'{data_dir}/{filename}', f'{data_dir}/s{(i+1):05}.pdf')
+        os.rename(f'{data_dir}/{filename}', f'{data_dir}/s{(i+start_index):05}.pdf')
         
 print('Files renamed successfully.')
