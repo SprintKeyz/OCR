@@ -1,4 +1,5 @@
 from pdf2image import convert_from_path
+from PIL import Image, ImageEnhance
 import io
 import os
 
@@ -18,6 +19,9 @@ def process_image(data_dir, students_data, student_number, popp_path=r'C:\Users\
     
     # crop image
     img = img.crop((38, 1856, 731, 2292))
+    
+    # increase contrast
+    img = ImageEnhance.Contrast(img).enhance(1.5)
     
     # save image
     img_path = f'{data_dir}/{student_file_name}.jpg'

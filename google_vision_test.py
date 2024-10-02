@@ -14,8 +14,12 @@ parser = argparse.ArgumentParser(description='OCR Processing.')
 parser.add_argument('-d', '--data', type=str, help='data directory')
 parser.add_argument('-n', '--num_students', type=int, help='number of students to process')
 parser.add_argument('-v', '--verbose', action='store_true', help='verbose output')
+parser.add_argument('-ev', '--extra-verbose', action='store_true', help='extra verbose output')
 
 args = parser.parse_args()
+
+if args.extra_verbose:
+    args.verbose = True
 
 if not args.data:
     print('Please specify a data directory with -d')
@@ -66,6 +70,9 @@ for (student_number) in range(1, max_students):
     if (args.verbose):
         print()
         print(f'Student: {student}')
+        
+    if (args.extra_verbose):
+        print()
         print('Texts:')
         for text in texts:
             print(text.description)
@@ -98,7 +105,7 @@ for (student_number) in range(1, max_students):
         line = line.replace('S', '5')
         line = line.replace('s', '5')
         
-        if (args.verbose):
+        if (args.extra_verbose):
             print(f'Old line: {old_line}')
             print(f'New line: {line}')
         
