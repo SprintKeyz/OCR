@@ -133,6 +133,17 @@ class Accuracy:
         if len(self.get_most_common_ghost_characters()) > 0:
             print(f'Most common ghost characters: {self.get_most_common_ghost_characters()[0][0]}, {self.get_most_common_ghost_characters()[0][1]} times')
         print('---------------------------------')
-        print()
-        print()
-        print(f'Overall score: {round(self.get_final_score(), 3)}')
+        
+    def return_report_as_string(self):
+        resp_a =  f'Overall word accuracy: {round(self.get_overall_word_accuracy() * 100, 3)}%\n' + \
+                f'Overall character accuracy: {round(self.get_overall_character_accuracy() * 100, 3)}%\n' + \
+                f'Minimum word accuracy: {self.get_min_word_accuracy()[0]}, {round(self.get_min_word_accuracy()[1] * 100, 3)}%\n' + \
+                f'Minimum character accuracy: {self.get_min_character_accuracy()[0]}, {round(self.get_min_character_accuracy()[1] * 100)}%\n'
+                
+        resp_b = ''
+        if len(self.get_most_common_skipped_characters()) > 0:
+            resp_b += f'Most common skipped characters: {self.get_most_common_skipped_characters()[0][0]}, {self.get_most_common_skipped_characters()[0][1]} times\n'
+        if len(self.get_most_common_ghost_characters()) > 0:
+            resp_b += f'Most common ghost characters: {self.get_most_common_ghost_characters()[0][0]}, {self.get_most_common_ghost_characters()[0][1]} times\n'
+            
+        return resp_a + resp_b

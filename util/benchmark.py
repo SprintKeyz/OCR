@@ -24,14 +24,4 @@ def add_student():
 
 def get_final_score(word_accuracy, char_accuracy):
     # calculate the time taken to process all students
-    time_end = time.time()
-    time_taken = time_end - time_start
-    
-    time_per_student = time_taken / num_students
-    
-    time_taken = 1 / (time_taken * 100)
-    
-    print(f'Time per student: {round(time_per_student, 3)}s')
-    print(f'Calculated time taken: {round(time_taken, 3)}')
-    
-    return ((word_accuracy * 0.75) + (char_accuracy * 0.15) + (time_taken * 0.10)) * 10.0
+    return (word_accuracy * 0.75) + (char_accuracy * 0.25)

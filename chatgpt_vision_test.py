@@ -62,7 +62,7 @@ for (student_number) in range(1, max_students):
     sys.stdout.write(f'\rProcessing student {student_number}/{max_students}...             ')
     sys.stdout.flush()
 
-    content = get_image.process_image(data_dir, data, student_number)
+    content = get_image.process_image(data_dir, student_number)
     content = base64.b64encode(content).decode('utf-8')
 
     headers = {

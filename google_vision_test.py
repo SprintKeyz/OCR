@@ -58,7 +58,7 @@ for (student_number) in range(1, max_students):
     sys.stdout.write(f'\rProcessing student {student_number}/{max_students}...             ')
     sys.stdout.flush()
 
-    content = get_image.process_image(data_dir, data, student_number)
+    content = get_image.process_image(data_dir, student_number)
 
     image = vision.Image(content=content)
     text_detection_params = vision.TextDetectionParams(enable_text_detection_confidence_score=True)
