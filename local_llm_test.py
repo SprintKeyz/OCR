@@ -14,7 +14,7 @@ import argparse
 
 
 class Phi3VisionModel:
-    def __init__(self, model_id="microsoft/Phi-3-vision-128k-instruct", device="cuda"):
+    def __init__(self, model_id="DunnBC22/trocr-base-handwritten-OCR-handwriting_recognition_v2", device="cuda"):
         self.model_id = model_id
         self.device = device
         self.model = self.load_model()
@@ -45,7 +45,7 @@ class Phi3VisionModel:
         
         generation_args = {
             "do_sample": False,
-            "max_new_tokens": 20
+            "max_new_tokens": 18,
         }
         
         output_ids = self.model.generate(**inputs, **generation_args)
@@ -59,6 +59,7 @@ phi_model = Phi3VisionModel()
 parser = argparse.ArgumentParser(description='OCR Processing.')
 parser.add_argument('-d', '--data', type=str, help='data directory')
 parser.add_argument('-n', '--num_students', type=int, help='number of students to process')
+parser.add_argument('-s', '--start_index', type=int, help='index of student to start at')
 parser.add_argument('-v', '--verbose', action='store_true', help='verbose output')
 
 args = parser.parse_args()
@@ -79,6 +80,12 @@ num_files = len([name for name in os.listdir(data_dir) if os.path.isfile(os.path
     
 max_students = args.num_students if args.num_students else num_files
 
+start_index = args.start_index if args.start_index else 1
+
+if start_index > num_files:
+    print('Start index is greater than number of files in data directory')
+    sys.exit()
+
 # Create an accuracy object
 acc = accuracy.Accuracy()
 
@@ -88,7 +95,7 @@ confidence_responses = []
 
 images_arr = []
 
-for student_number in range(1, max_students):
+for student_number in range(start_index, max_students + start_index):
     # The CSV format is index,student,a,b,c
     # Get the first student (with index 1) and their a,b,c values
     student = data[student_number][1:]
@@ -101,15 +108,31 @@ for student_number in range(1, max_students):
     sys.stdout.write(f'\rProcessing student {student_number}/{max_students}...             ')
     sys.stdout.flush()
     content = get_image.process_image_as_pil(data_dir, data, student_number)
-    prompt = "You are given an image. I want you to return each value next to a: b: and c: (or only a: and b: or only a: depending on what exists in the image). Return the values separated by commas WITHOUT spaces, and do not truncate numbers even if there are redundant characters. Stop once you have found the numbers (up to 3 of them), and don't try to return 'Set' anything."
+    prompt = (
+        "Extract the answers labeled 'a:', 'b:', and 'c:' from the document. "
+        "Only return the answers in a comma-separated format ((WITHOUT SPACES)) with (NO extra text). "
+    )
     
     response = phi_model.extract_data([content], prompt)
     torch.cuda.empty_cache()
     
-    # filter out everything after the letter 'S' if it exists
-    response = response[0].split('S')[0]
+    print(f"Preprocessed response for {student[0]} (id {student_number}): ", response)
     
-    print(f"Response for image {student_number}: {response}")
+    # filter out everything after the first space
+    response = response[0].split(' ')[0]
+    
+    # remove % symbols
+    response = response.replace('%', '')
+    
+    # replace '(' with a 1
+    response = response.replace('(', '1')
+    response = response.replace('C', '6')
+    
+    # if we have a trailing comma, remove it
+    if response[-1] == ',':
+        response = response[:-1]
+    
+    print(f"Processed response for {student[0]} (id {student_number}): ", response)
     
     # split into a list of responses
     response = response.split(',')
