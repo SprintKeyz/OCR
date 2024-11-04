@@ -3,6 +3,11 @@ from PIL import Image, ImageEnhance
 import io
 import os
 
+def load_image(image_path):
+    # load image as PIL 
+    print(image_path)
+    return Image.open(image_path).convert('RGB')
+
 def process_image(data_dir, student_number, popp_path=r'C:\Users\Engineer99\Downloads\Release-24.07.0-0\poppler-24.07.0\Library\bin'):
     
     student_number = str(student_number).zfill(5)
@@ -29,7 +34,7 @@ def process_image(data_dir, student_number, popp_path=r'C:\Users\Engineer99\Down
     with io.open(img_path, 'rb') as image_file:
         content = image_file.read()
         
-    os.remove(img_path)
+    #os.remove(img_path)
         
     return content
 

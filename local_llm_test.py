@@ -14,7 +14,7 @@ import argparse
 
 
 class Phi3VisionModel:
-    def __init__(self, model_id="DunnBC22/trocr-base-handwritten-OCR-handwriting_recognition_v2", device="cuda"):
+    def __init__(self, model_id="microsoft/Phi-3-vision-128k-instruct", device="cuda"):
         self.model_id = model_id
         self.device = device
         self.model = self.load_model()

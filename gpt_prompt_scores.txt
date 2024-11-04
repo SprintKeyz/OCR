@@ -1,5 +1,0 @@
-"Find all numbers in this image and return them each on a new line. Do not return ANYTHING except the numbers."
-    - 94.048% word, 98.77% char
-
-Find all text in this image and return it as it is written, including any new lines, numbers, or symbols. Do not ever return an _. This is also written by kids!
-    - 91.667% word, 95.198% char
