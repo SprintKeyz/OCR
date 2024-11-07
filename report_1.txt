@@ -1,0 +1,6 @@
+Overall word accuracy: 65.0%
+Overall character accuracy: 85.25%
+Minimum word accuracy: ?, 0.0%
+Minimum character accuracy: ?, 21%
+Most common skipped characters: ., 6 times
+Most common ghost characters: 7, 1 times

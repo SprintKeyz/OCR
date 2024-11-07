@@ -77,6 +77,10 @@ for (student_number) in range(1, max_students):
         for text in texts:
             print(text.description)
         print()
+        
+    if not texts:
+        print(f'No text found for student {student_number}')
+        continue
     
     # grab confidence for student
     confidence_responses.append([student, texts[0].confidence])
@@ -104,7 +108,6 @@ for (student_number) in range(1, max_students):
         line = line.replace('५', '4')
         line = line.replace('S', '5')
         line = line.replace('s', '5')
-        line = line.replace('C', '6')
         
         if (args.extra_verbose):
             print(f'Old line: {old_line}')

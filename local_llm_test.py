@@ -2,6 +2,7 @@ import util.get_image as get_image
 import util.accuracy as accuracy
 from PIL import Image
 from transformers import AutoModelForCausalLM, AutoProcessor
+import torch.nn.functional as F
 import base64
 import requests
 import csv
@@ -11,6 +12,9 @@ import torch
 
 # Get args
 import argparse
+
+import secrets_1 as secrets
+api_key = secrets.openai_api_key
 
 
 class Phi3VisionModel:
@@ -48,10 +52,16 @@ class Phi3VisionModel:
             "max_new_tokens": 18,
         }
         
-        output_ids = self.model.generate(**inputs, **generation_args)
-        output_ids = output_ids[:, inputs["input_ids"].shape[1]:]
+        output = self.model.generate(**inputs, **generation_args, output_scores=True, return_dict_in_generate=True)
+        output_ids = output.sequences[:, inputs["input_ids"].shape[1]:]
         response = self.processor.batch_decode(output_ids, skip_special_tokens=True)
-        return response
+        
+        # Calculate confidence scores
+        logits = output.scores
+        probs = [F.softmax(logit, dim=-1) for logit in logits]
+        confidences = [prob.max().item() for prob in probs]
+        
+        return response, confidences
     
 phi_model = Phi3VisionModel()
 
@@ -113,32 +123,109 @@ for student_number in range(start_index, max_students + start_index):
         "Only return the answers in a comma-separated format ((WITHOUT SPACES)) with (NO extra text). "
     )
     
-    response = phi_model.extract_data([content], prompt)
+    response, confidence = phi_model.extract_data([content], prompt)
     torch.cuda.empty_cache()
     
     print(f"Preprocessed response for {student[0]} (id {student_number}): ", response)
+    print(f"Confidence for {student[0]} (id {student_number}): ", confidence)
     
-    # filter out everything after the first space
-    response = response[0].split(' ')[0]
+    # if any value in the confidence array is less than 0.6, pass to GPT4
+    if any([c < 0.7 for c in confidence]):
+        print("--------------- Delegating to OpenAI! ------------------")
+        
+        content = get_image.process_image(data_dir, student_number)
+        content = base64.b64encode(content).decode('utf-8')
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {api_key}'
+        }
+        
+        payload = {
+            'model': 'gpt-4o',
+            'temperature': 0,
+            'messages': [
+                {
+                    'role': 'user',
+                    'content': [
+                        {
+                            'type': 'text',
+                            'text': "Extract all answers from this image and return each on a new line. The image contains bedly written handwriting, and contains no commas. Return NOTHING except the answers, and do not include any letters in the answers. If you find answers 1 and 2, return '1,2' followed by a new line."
+                        },
+                        {
+                            'type': 'image_url',
+                            'image_url': {
+                                'url': f'data:image/jpeg;base64,{content}'
+                            }
+                        }
+                    ]
+                }
+            ],
+            'max_tokens': 100,
+        }
+
+        response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=payload)
+        response_json = response.json()
+        
+        #print(response_json)
+
+        content_data = response_json['choices'][0]['message']['content']
+
+        # clean up our response
+        response_data = []
+        
+        # split the response by new lines
+        for line in content_data.split('\n'):
+            # if a line starts with "Set" or "set", ignore the first 5 characters
+            if line.lower().startswith('set'):
+                line = line[5:]
+                
+            # replace letter Z with number 2
+            old_line = line
+            line = line.replace('Z', '2')
+            line = line.replace('z', '2')
+            line = line.replace('|', '1')
+            
+            # remove the text "write only answers below this line"
+            if 'write only answers below this line' in line.lower():
+                line = line.replace('Write ONLY answers below this line', '')
+                
+            line = line.replace('S', '5')
+            line = line.replace('s', '5')
+            
+            # remove all lines not containing numbers
+            if not any(char.isdigit() for char in line):
+                continue
+            
+            numbers = [char for char in line if char.isdigit() or char == '.']
+            response_data.append(''.join(numbers))
+            
+        acc.append_calculation(student, response_data)
+        
+    else:
+        # filter out everything after the first space
+        response = response[0].split(' ')[0]
+        
+        # remove % symbols
+        response = response.replace('%', '')
+        
+        # replace '(' with a 1
+        response = response.replace('(', '1')
+        response = response.replace('C', '6')
+        
+        # if we have a trailing comma, remove it
+        if response[-1] == ',':
+            response = response[:-1]
+        
+        #print(f"Processed response for {student[0]} (id {student_number}): ", response)
+        
+        # split into a list of responses
+        response = response.split(',')
+        
+        # append to accuracy calculation
+        acc.append_calculation(student, response)
     
-    # remove % symbols
-    response = response.replace('%', '')
-    
-    # replace '(' with a 1
-    response = response.replace('(', '1')
-    response = response.replace('C', '6')
-    
-    # if we have a trailing comma, remove it
-    if response[-1] == ',':
-        response = response[:-1]
-    
-    print(f"Processed response for {student[0]} (id {student_number}): ", response)
-    
-    # split into a list of responses
-    response = response.split(',')
-    
-    # append to accuracy calculation
-    acc.append_calculation(student, response)
+    print('\n\n\n\n\n')
     
 acc.print_report()
 

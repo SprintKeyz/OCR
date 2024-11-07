@@ -34,7 +34,7 @@ def process_image(data_dir, student_number, popp_path=r'C:\Users\Engineer99\Down
     with io.open(img_path, 'rb') as image_file:
         content = image_file.read()
         
-    #os.remove(img_path)
+    os.remove(img_path)
         
     return content
 

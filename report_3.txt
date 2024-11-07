@@ -1,0 +1,6 @@
+Overall word accuracy: 90.0%
+Overall character accuracy: 97.333%
+Minimum word accuracy: rhyan bullard, 50.0%
+Minimum character accuracy: adin shah, 83%
+Most common skipped characters: ., 1 times
+Most common ghost characters: 9, 1 times

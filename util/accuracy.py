@@ -30,6 +30,8 @@ class Accuracy:
 
         all_skipped = [char for sublist in skipped_chars for char in sublist]  # Flatten the list
         self.skipped_characters.append([student[0], all_skipped])
+        
+        print(f'Skippped characters: {all_skipped}')
 
         # Check for ghost characters
         ghost_chars = [
@@ -39,6 +41,8 @@ class Accuracy:
 
         all_ghosts = [char for sublist in ghost_chars for char in sublist]  # Flatten the list
         self.ghost_characters.append([student[0], all_ghosts])
+        
+        print(f'Ghost characters: {all_ghosts}')
 
         # Calculate character accuracy (Levenshtein distance)
         char_accuracies = [

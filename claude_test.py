@@ -4,12 +4,10 @@ import requests
 import secrets_1 as secrets
 import util.get_image as get_image
 import util.accuracy as accuracy
-import util.benchmark as benchmark
+import anthropic
 
 api_key = secrets.openai_api_key
 
-from pdf2image import convert_from_path
-import io
 import csv
 import os
 import sys
@@ -44,6 +42,10 @@ max_students = args.num_students if args.num_students else num_files
 # create an accuracy object
 acc = accuracy.Accuracy()
 
+client = anthropic.Anthropic(
+    api_key=secrets.anthropic_api_key
+)
+
 # save responses in the form of [student, preprocessed_response, cleaned_response]
 preprocessed_responses = []
 confidence_responses = []
@@ -64,72 +66,38 @@ for (student_number) in range(1, max_students):
 
     content = get_image.process_image(data_dir, student_number)
     content = base64.b64encode(content).decode('utf-8')
+    content_type = 'image/jpeg'
 
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {api_key}'
-    }
-
-    payload = {
-        'model': 'gpt-4o',
-        'temperature': 0,
-        'messages': [
+    message = client.messages.create(
+        model="claude-3-5-sonnet-20241022",
+        max_tokens=1024,
+        temperature=0.0,
+        messages=[
             {
-                'role': 'user',
-                'content': [
+                "role": "user",
+                "content": [
                     {
-                        'type': 'text',
-                        'text': "Extract all answers from this image and return each on a new line. The image contains bedly written handwriting, and contains no commas. Return NOTHING except the answers, and do not include any letters in the answers. If you find answers 1 and 2, return '1,2' followed by a new line."
+                        "type": "image",
+                        "source": {
+                            "type": "base64",
+                            "media_type": content_type,
+                            "data": content
+                        },
                     },
                     {
-                        'type': 'image_url',
-                        'image_url': {
-                            'url': f'data:image/jpeg;base64,{content}'
-                        }
+                        "type": "text",
+                        "text": "Extract all answers from this image and return each on a new line. The image contains bedly written handwriting, and contains no commas. Return NOTHING except the answers, and do not include any letters in the answers. If you find answers 1 and 2, return '1,2' followed by a new line."
                     }
-                ]
+                ],
             }
         ],
-        'max_tokens': 100,
-    }
-    
-    #
-    
-    
-    
-    
-    
-    
-    
-    
-    # the way to do this is to check for certain features of both models (such as the presence of an additional comma in one vs another) and use whichever response is more trusted.
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-    response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=payload)
-    response_json = response.json()
-    
-    #print(response_json)
-
-    content_data = response_json['choices'][0]['message']['content']
-    confidence_data = response_json['choices'][0]['message'].get('confidence', None)
-    
-    print(f"Confidence for {student[0]} (id {student_number}): ", confidence_data)
+    )
 
     # clean up our response
     response_data = []
     
     # split the response by new lines
-    for line in content_data.split('\n'):
+    for line in message.content[0].text.split('\n'):
         # if a line starts with "Set" or "set", ignore the first 5 characters
         if line.lower().startswith('set'):
             line = line[5:]

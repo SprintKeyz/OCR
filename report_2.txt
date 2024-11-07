@@ -1,0 +1,6 @@
+Overall word accuracy: 80.0%
+Overall character accuracy: 94.833%
+Minimum word accuracy: stefan, 0.0%
+Minimum character accuracy: adin shah, 75%
+Most common skipped characters: ., 3 times
+Most common ghost characters: 7, 1 times
